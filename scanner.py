@@ -1,12 +1,38 @@
 import socket
 import sys
+import argparse
 from datetime import datetime
 
 # ==========================================
-# 1. CONFIGURATION DE LA CIBLE
+# 1. GESTION DES ARGUMENTS CLI (argparse)
 # ==========================================
-cible = "127.0.0.1"
-ip_cible = socket.gethostbyname(cible)
+parser = argparse.ArgumentParser(
+    description="Scanner de ports TCP simple en ligne de commande.",
+    add_help=False
+)
+
+parser.add_argument("-t", "--target", help="Adresse IP ou nom d'hôte de la cible")
+
+if len(sys.argv) == 1:
+    print("Erreur : Veuillez spécifier une adresse IP cible avec l'option -t.")
+    sys.exit(1)
+
+args = parser.parse_args()
+
+if not args.target:
+    print("Erreur : Veuillez spécifier une adresse IP cible avec l'option -t.")
+    sys.exit(1)
+
+cible = args.target
+
+# ==========================================
+# 2. CONFIGURATION DE LA CIBLE
+# ==========================================
+try:
+    ip_cible = socket.gethostbyname(cible)
+except socket.gaierror:
+    print(f"\n[-] Erreur : Impossible de résoudre le nom d'hôte ou l'IP '{cible}'.")
+    sys.exit(1)
 
 print("-" * 50)
 print(f"[*] Scan de la cible : {ip_cible}")
@@ -14,10 +40,9 @@ print(f"[*] Heure de début : {datetime.now()}")
 print("-" * 50)
 
 # ==========================================
-# 2. BOUCLE DE SCAN (TCP Connect Scan)
+# 3. BOUCLE DE SCAN (TCP Connect Scan)
 # ==========================================
 try:
-    # On scanne jusqu'au port 10000 pour intercepter ton serveur du TP précédent
     for port in range(20, 10001):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(0.2) 
